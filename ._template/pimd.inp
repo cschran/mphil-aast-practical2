@@ -1,0 +1,95 @@
+@SET MODEL ../../._model
+@SET PSTEP 8
+
+&GLOBAL
+  PROJECT ICE-Ih
+  PRINT_LEVEL SILENT
+  RUN_TYPE PINT
+&END GLOBAL
+
+&MOTION
+  &PINT
+    P XXXREPLICAXXX
+    NUM_STEPS XXXSTEPSXXX
+    DT 0.25
+    TEMP 250
+    HARM_INT EXACT
+    NRESPA  1
+    TRANSFORMATION  NORMAL
+    PROPAGATOR  RPMD
+    &PILE
+      LAMBDA 0.5
+      TAU 500.0
+    &END PILE
+    &PRINT
+      IMAGINARY_TIME_STRIDE 1
+      &CENTROID_POS  ON
+        &EACH
+          PINT  ${PSTEP}
+        &END EACH
+        FORMAT XYZ
+      &END CENTROID_POS
+      &CENTROID_VEL  ON
+        &EACH
+          PINT  ${PSTEP}
+        &END EACH
+        FORMAT XYZ
+      &END CENTROID_VEL
+      &CENTROID_GYR  ON
+        &EACH
+          PINT  ${PSTEP}
+        &END EACH
+      &END CENTROID_GYR
+      &ENERGY  ON
+        &EACH
+          PINT  1
+        &END EACH
+      &END ENERGY
+    &END PRINT
+  &END PINT
+  &PRINT
+  &TRAJECTORY
+      &EACH
+        PINT ${PSTEP}
+      &END EACH
+      FORMAT XYZ
+    &END TRAJECTORY 
+    &RESTART
+      ADD_LAST NUMERIC
+      &EACH
+        MD 4000
+      &END EACH
+    &END RESTART
+  &END PRINT 
+&END MOTION
+
+&FORCE_EVAL
+  METHOD  NNP
+  &NNP
+    NNP_INPUT_FILE_NAME ${MODEL}/nnp-000/input.nn
+    SCALE_FILE_NAME     ${MODEL}/nnp-000/scaling.data
+    &MODEL
+       WEIGHTS          ${MODEL}/nnp-000/weights
+    &END MODEL
+    &MODEL
+       WEIGHTS          ${MODEL}/nnp-001/weights
+    &END MODEL
+    &MODEL
+       WEIGHTS          ${MODEL}/nnp-002/weights
+    &END MODEL
+    &MODEL
+       WEIGHTS          ${MODEL}/nnp-003/weights
+    &END MODEL
+  &END NNP
+  &SUBSYS
+    &TOPOLOGY
+      CONN_FILE_FORMAT OFF
+      COORD_FILE_NAME ice-Ih.pdb
+      COORD_FILE_FORMAT PDB
+    &END TOPOLOGY
+    &CELL
+      ABC 13.489   15.576   14.641
+      PERIODIC XYZ
+    &END CELL
+  &END SUBSYS
+&END FORCE_EVAL
